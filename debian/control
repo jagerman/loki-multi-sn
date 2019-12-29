@@ -1,0 +1,21 @@
+Source: loki-multi-sn
+Section: metapackages
+Priority: optional
+Maintainer: Jason Rhinelander <jason@imaginary.ca>
+Build-Depends: debhelper (>= 9~), dh-systemd (>= 1.5)
+Standards-Version: 4.1.4
+Homepage: https://github.com/jagerman/loki-multi-sn
+
+Package: loki-multi-sn
+Architecture: all
+Multi-Arch: foreign
+Depends: curl, lokid (>= 6.1.0), lokinet-bin (>= 0.6.1), loki-storage-server (>= 1.0.9)
+Description: Loki service node multi-SN helper package
+ This package contains service templates, targets, and a helper script to set
+ up multiple SNs on the same machine.
+ .
+ This is unsupported and requires significantly a significantly more powerful
+ machine than what is required to run a single service node.
+ .
+ For more details on how to use this, see
+ https://github.com/jagerman/loki-multi-sn

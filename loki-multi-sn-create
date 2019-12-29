@@ -1,0 +1,87 @@
+#!/bin/bash
+
+set -e
+
+if [ "$#" -ne 1 ] || [[ ! $1 =~ ^[0-9][0-9]$ ]]; then
+    echo "Usage: loki-multi-sn-create XX where XX is a two-digit number."
+    exit 1
+fi
+
+if [ "$UID" -ne 0 ]; then
+    echo "This script must be run as root (e.g. via sudo)."
+    exit 1
+fi
+
+PT=$1
+lokid_conf=/etc/loki/node-$PT.conf
+ss_conf=/etc/loki/storage-$PT.conf
+lokinet_conf=/etc/loki/lokinet-router-$PT.ini
+for x in $lokid_conf $ss_conf $lokinet_conf /var/lib/loki/node-$PT /var/lib/lokinet/router-$PT /var/lib/loki/storage-$PT; do
+    if [ -e $x ]; then
+        echo "$x already exists, refusing to overwrite."
+        exit 1
+    fi
+done
+
+ip=$(curl -sS http://api.ipify.org)
+if [ -z "$ip" ]; then
+    echo "Failed to figure out your public IP via ipify.org"
+    exit 2
+fi
+
+echo "Creating $lokid_conf"
+cat <<EOF >$lokid_conf
+service-node=1
+service-node-public-ip=$ip
+storage-server-port=221$PT
+p2p-bind-port=222$PT
+rpc-bind-port=223$PT
+zmq-rpc-bind-port=224$PT
+quorumnet-port=225$PT
+data-dir=/var/lib/loki/node-$PT
+EOF
+mkdir /var/lib/loki/node-$PT
+chown _loki:_loki /var/lib/loki/node-$PT
+
+echo "Creating $ss_conf"
+cat <<EOF >$ss_conf
+ip=0.0.0.0
+port=221$PT
+lokid-rpc-port=223$PT
+data-dir=/var/lib/loki/storage-$PT
+EOF
+mkdir /var/lib/loki/storage-$PT
+chown _loki:_loki /var/lib/loki/storage-$PT
+
+echo "Creating $lokinet_conf"
+tmpdir=$(mktemp --tmpdir -d lokinet.XXXXXXXXXX)
+/usr/bin/lokinet -r $tmpdir/lokinet.ini
+perl -pi -e "
+    s#$tmpdir#/var/lib/lokinet/router-$PT#;
+    if (/^\[lokid/ ... /^\[/) {
+        s#enabled=false#enabled=true#;
+        s#jsonrpc=127\.0\.0\.1:22023#jsonrpc=127.0.0.1:223$PT#;
+    } elsif (/^\[bind/ ... /^\[/) {
+        s#^(.*)=1090#\$1=109$PT#;
+    } elsif (/^\[dns/ ... /^\[/) {
+        s/^upstream=/#upstream=/;
+        s#bind=(?:.*):53#bind=127.1$PT.0.0:53#;
+    } elsif (/^\[api/ ... /^\[/) {
+        s#bind=127.0.0.1:1190#bind=127.0.0.1:119$PT#;
+    } elsif (/^\[network\]/) {
+        s#\$#\nifname=lokitun$PT\nifaddr=10.1$PT.0.1/16#;
+    }
+" $tmpdir/lokinet.ini
+chmod 640 $tmpdir/lokinet.ini
+chgrp _loki $tmpdir/lokinet.ini
+mv $tmpdir/lokinet.ini $lokinet_conf
+mkdir /var/lib/lokinet/router-$PT
+/usr/bin/lokinet-bootstrap lokinet /var/lib/lokinet/router-$PT/bootstrap.signed
+ln -s $lokinet_conf /var/lib/lokinet/router-$PT/lokinet.ini
+chown -R _lokinet:_loki /var/lib/lokinet/router-$PT
+
+echo -e "\n\n\nDone with configuration setup.  Enabling and starting services..."
+
+systemctl enable --now loki{-node,-storage-server,net-router}@$PT.service
+
+echo "All done!\n"

@@ -1,0 +1,8 @@
+loki-node@.service /lib/systemd/system
+loki-storage-server@.service /lib/systemd/system
+lokinet-router@.service /lib/systemd/system
+loki-nodes.target /lib/systemd/system
+loki-storage-servers.target /lib/systemd/system
+lokinet-routers.target /lib/systemd/system
+ufw/loki-multi-sn /etc/ufw/applications.d
+loki-multi-sn-create /usr/bin

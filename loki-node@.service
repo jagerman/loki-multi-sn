@@ -1,0 +1,17 @@
+[Unit]
+Description=Loki network node (%i)
+After=network-online.target
+PartOf=loki-nodes.target
+
+[Service]
+User=_loki
+Type=simple
+WorkingDirectory=/var/lib/loki
+Restart=always
+RestartSec=5s
+ExecStart=/usr/bin/lokid --non-interactive --config-file /etc/loki/node-%i.conf
+# Enable coloured daemon output:
+Environment=TERM=xterm
+
+[Install]
+WantedBy=multi-user.target
