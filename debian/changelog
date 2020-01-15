@@ -1,3 +1,9 @@
+loki-multi-sn (0.1) sid; urgency=medium
+
+  * Add capabilities to lokinet service templates.
+
+ -- Jason Rhinelander <jason@imaginary.ca>  Tue, 14 Jan 2020 20:18:10 -0400
+
 loki-multi-sn (0.0) sid; urgency=low
 
   * Initial release.
