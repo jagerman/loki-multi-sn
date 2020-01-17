@@ -1,3 +1,10 @@
+loki-multi-sn (0.2) sid; urgency=medium
+
+  * Fix missing network ifname/ifaddr in lokinet config
+  * Allow overwriting existing config by setting OVERWRITE=1 before running.
+
+ -- Jason Rhinelander <jason@imaginary.ca>  Fri, 17 Jan 2020 16:38:41 -0400
+
 loki-multi-sn (0.1) sid; urgency=medium
 
   * Add capabilities to lokinet service templates.
