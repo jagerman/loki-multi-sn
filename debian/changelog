@@ -1,3 +1,10 @@
+loki-multi-sn (0.3) sid; urgency=medium
+
+  * Add systemd watchdog/notify to loki-node@.service file
+  * Update lokid dependency to require >=6.1.4 (for the above support).
+
+ -- Jason Rhinelander <jason@imaginary.ca>  Mon, 20 Jan 2020 00:07:08 -0400
+
 loki-multi-sn (0.2) sid; urgency=medium
 
   * Fix missing network ifname/ifaddr in lokinet config
