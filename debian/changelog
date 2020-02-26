@@ -1,3 +1,9 @@
+loki-multi-sn (0.5) sid; urgency=medium
+
+  * Bump loki-storage-server and switch to Type=notify
+
+ -- Jason Rhinelander <jason@imaginary.ca>  Wed, 26 Feb 2020 17:23:45 -0400
+
 loki-multi-sn (0.4) sid; urgency=medium
 
   * Bump lokid dep to 6.1.4-2 (6.1.4-1 was broken)

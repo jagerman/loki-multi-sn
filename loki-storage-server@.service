@@ -7,7 +7,8 @@ PartOf=loki-storage-servers.target
 
 [Service]
 User=_loki
-Type=simple
+Type=notify
+WatchdogSec=5min
 WorkingDirectory=/var/lib/loki
 Restart=always
 RestartSec=5s
