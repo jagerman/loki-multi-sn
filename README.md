@@ -139,7 +139,7 @@ You will most likely want one additional piece to be able to query the service n
         alias lokid-$p="lokid --config=$n"
     done
     lokid_all() {
-        for n in /etc/loki/loki/node-*.conf; do
+        for n in /etc/loki/node-*.conf; do
             p=${n/*node-/}
             p=${p/.conf/}
             echo -e "\nlokid-$p:"
