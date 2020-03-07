@@ -9,7 +9,7 @@ Homepage: https://github.com/jagerman/loki-multi-sn
 Package: loki-multi-sn
 Architecture: all
 Multi-Arch: foreign
-Depends: curl, lokid (>= 6.1.4-2~), lokinet-bin (>= 0.6.1), loki-storage-server (>= 1.0.9-3~)
+Depends: curl, lokid (>= 6.1.4-2~), lokinet-bin (>= 0.7.0~rc2~), loki-storage-server (>= 1.0.9-3~)
 Description: Loki service node multi-SN helper package
  This package contains service templates, targets, and a helper script to set
  up multiple SNs on the same machine.

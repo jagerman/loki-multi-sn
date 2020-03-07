@@ -1,3 +1,10 @@
+loki-multi-sn (0.6) sid; urgency=medium
+
+  * Bump lokinet dep to 0.7.0 rc
+  * Change lokinet-router@ dep to Type=notify
+
+ -- Jason Rhinelander <jason@imaginary.ca>  Sat, 07 Mar 2020 10:49:27 -0400
+
 loki-multi-sn (0.5) sid; urgency=medium
 
   * Bump loki-storage-server and switch to Type=notify
