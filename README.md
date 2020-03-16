@@ -86,7 +86,7 @@ The number you choose will be used in the ports that your service nodes use: for
 number XX:
 
 Public address listeners:
-- storage server will listen on port 221XX (on the public IP)
+- storage server will listen on ports 221XX and 202XX (on the public IP)
 - lokid p2p will listen on port 222XX (on the public IP)
 - lokid quorumnet will listen on port 225XX (on the public IP)
 - lokinet will listen on UDP port 109XX (on the public IP)
@@ -99,8 +99,8 @@ Internal (localhost) listeners:
   about this).
 
 As an example, let's say I have chosen the number 42.  Then my public IP will have services on ports
-22142, 22242, 22542, and 11142; with internal (localhost) ports 22342 and 22442.  (If you are using
-a firewall that blocks everything, add appropriate exceptions for *each* SN's four public ports).
+20242, 22142, 22242, 22542, and 11142; with internal (localhost) ports 22342 and 22442.  (If you are using
+a firewall that blocks everything, add appropriate exceptions for *each* SN's five public ports).
 
 ### Enabling the service
 

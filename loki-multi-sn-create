@@ -49,6 +49,7 @@ echo "Creating $ss_conf"
 cat <<EOF >$ss_conf
 ip=0.0.0.0
 port=221$PT
+lmq-port=202$PT
 lokid-rpc-port=223$PT
 data-dir=/var/lib/loki/storage-$PT
 EOF

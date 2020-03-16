@@ -6,3 +6,4 @@ loki-storage-servers.target /lib/systemd/system
 lokinet-routers.target /lib/systemd/system
 ufw/loki-multi-sn /etc/ufw/applications.d
 loki-multi-sn-create /usr/bin
+loki-multi-sn-upgrade /usr/bin

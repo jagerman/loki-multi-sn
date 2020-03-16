@@ -1,3 +1,10 @@
+loki-multi-sn (0.7) sid; urgency=medium
+
+  * 7.x release
+  * Add note about new storage server option and upgrade script
+
+ -- Jason Rhinelander <jason@imaginary.ca>  Mon, 16 Mar 2020 18:28:21 -0300
+
 loki-multi-sn (0.6) sid; urgency=medium
 
   * Bump lokinet dep to 0.7.0 rc

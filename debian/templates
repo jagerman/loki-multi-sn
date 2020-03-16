@@ -1,0 +1,12 @@
+Template: loki-multi-sn/v7upgrade
+Type: note
+Description: v7.x upgrade instructions
+ With the 7.x release the Loki storage server requires a new "lmq-port" option
+ to be added to the configuration file before the storage server will start.
+ This package contains a script to help you do this for a multi-sn setup; after
+ installation run:
+ .
+     sudo loki-multi-sn-upgrade
+ .
+ which will automatically add lmq-port=202XX options to any existing
+ /etc/loki/storage-XX.conf files.  You should only have to do this once.
