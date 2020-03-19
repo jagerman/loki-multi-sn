@@ -87,8 +87,17 @@ mkdir -p /var/lib/lokinet/router-$PT
 ln -snf $lokinet_conf /var/lib/lokinet/router-$PT/lokinet.ini
 chown -R _lokinet:_loki /var/lib/lokinet/router-$PT
 
-echo -e "\n\n\nDone with configuration setup.  Enabling and starting services..."
+echo -e "\n\n\nDone with configuration setup.  Enabling services..."
+systemctl enable loki{-node,-storage-server,net-router}@$PT.service
 
-systemctl enable --now loki{-node,-storage-server,net-router}@$PT.service
+echo -e "\n\nServices configured to auto-start.  Press enter to actually start services now,"
+echo -e     "or Ctrl-C if you want to look around first before launching them.  Note that if"
+echo -e     "you hit Ctrl-C here you will have to start them yourself using:\n"
+echo -e     "    systemctl start loki-node@$PT loki-storage-server@$PT lokinet-router@$PT\n"
+read
+
+echo "Starting services..."
+
+systemctl start loki{-node,-storage-server,net-router}@$PT.service
 
 echo "All done!\n"
