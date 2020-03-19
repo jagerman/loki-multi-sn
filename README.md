@@ -248,7 +248,7 @@ running, and I want to create server node 77.
    Double check that you have this in the correct order!  The first file path should be the fully synced
    node, the second is the new one to overwrite.
 
-4. Start both lokid's again with: `sudo systemctl stop loki-node@42 loki-node@77`
+4. Start both lokid's again with: `sudo systemctl start loki-node@42 loki-node@77`
 
 5. Check on your lokid's with `lokid-42 status` and `lokid-77` status.  (This assumes you installed
    the bit of code in `~/.bashrc` that I mentioned earlier.  Also you will have to log out and in
