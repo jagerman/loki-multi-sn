@@ -1,3 +1,10 @@
+loki-multi-sn (0.8) sid; urgency=medium
+
+  * Bump lokid required version to 7.1.2
+  * Add pause between service enabling and starting
+
+ -- Jason Rhinelander <jason@imaginary.ca>  Thu, 19 Mar 2020 20:37:17 -0300
+
 loki-multi-sn (0.7) sid; urgency=medium
 
   * 7.x release
