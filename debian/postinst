@@ -3,7 +3,7 @@
 if [ "$1" = configure ]; then
     . /usr/share/debconf/confmodule
 
-    if dpkg --compare-versions "$2" lt '0.7'; then
+    if [ "$2" != "" ] && dpkg --compare-versions "$2" lt '0.7'; then
         db_input critical loki-multi-sn/v7upgrade || true
         db_go || true
     fi
