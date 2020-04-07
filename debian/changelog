@@ -1,3 +1,10 @@
+loki-multi-sn (0.10) sid; urgency=medium
+
+  * increase FD limits for lokid and ss
+  * bump required lokid and ss package versions
+
+ -- Jason Rhinelander <jason@imaginary.ca>  Tue, 07 Apr 2020 18:02:47 -0300
+
 loki-multi-sn (0.9) sid; urgency=medium
 
   * don't show upgrade prompt on new install

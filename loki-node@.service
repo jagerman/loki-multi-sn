@@ -8,6 +8,7 @@ User=_loki
 Type=notify
 WatchdogSec=5min
 WorkingDirectory=/var/lib/loki
+LimitNOFILE=16384
 Restart=always
 RestartSec=5s
 ExecStart=/usr/bin/lokid --non-interactive --config-file /etc/loki/node-%i.conf
