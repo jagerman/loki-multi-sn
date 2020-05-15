@@ -50,7 +50,7 @@ service nodes on the core of a dedicated server than I would to load more onto a
 other words, a dedicated server with these same specifications but with real cores could easily
 handle twice the CPU load of this VPS).
 
-## Setting it up
+## Installing the package
 
 This package installs a loki-multi-sn debian/ubuntu package which installs systemd service templates
 named `loki-node@.service`, `loki-storage-server@.service`, `lokinet-router@.service` as well as
@@ -76,11 +76,13 @@ which will install them but, because they are masked, not start them.  (If you a
 running with the basic debs then just don't unmask: you'll continue to have the default services
 running *in addition* to the new templated onces we set up below).
 
-### Setting up one service node
+## Setting up a service node
+
+### Step 1: Choose a number
 
 Choose a two-digit number from 00 to 99.  I recommend you start at 00 or 01 and then move up by one
-for each one, but if you have some other system in mind go ahead.  It must be numeric, however, and
-I highly recommend that you start values in 0-9 with an extra leading 0.
+for each one, but if you have some other system in mind go ahead as long as you use two-digit
+numbers.
 
 The number you choose will be used in the ports that your service nodes use: for service number with
 number XX:
@@ -90,6 +92,7 @@ Public address listeners:
 - lokid p2p will listen on port 222XX (on the public IP)
 - lokid quorumnet will listen on port 225XX (on the public IP)
 - lokinet will listen on UDP port 109XX (on the public IP)
+
 Internal (localhost) listeners:
 - lokid rpc will listen on port 223XX
 - lokid zmq rpc will listen on port 224XX
@@ -102,7 +105,7 @@ As an example, let's say I have chosen the number 42.  Then my public IP will ha
 20242, 22142, 22242, 22542, and 11142; with internal (localhost) ports 22342 and 22442.  (If you are using
 a firewall that blocks everything, add appropriate exceptions for *each* SN's five public ports).
 
-### Enabling the service
+### Step 2: Enable the service
 
 Enable and start your service node cluster using the number you chose above (I'll continue using 42
 as an example):
@@ -198,7 +201,7 @@ you *cannot* use `sudo systemctl start loki-nodes.target` to start them all.
 ### Managing service node keys
 
 You should keep a backup of your service node's private keys.  If your server node were to
-irreocoverably crash or your ISP disconnects you, you will need them to set up your SN somewhere
+irrecoverably crash or your ISP disconnects you, you will need them to set up your SN somewhere
 else.
 
 If you know how to properly make a copy of a binary file (e.g. using scp) then do it.  Otherwise,
@@ -219,8 +222,8 @@ save somewhere.  For example:
     00000020: 8193 5717 2977 af80 45ae df53 0cb5 fe69  ..W.)w..E..S...i
     00000030: d753 3c3e b32f ee2d adc7 0c04 8415 3822  .S<>./.-......8"
 
-(I know, I know, Hades is from the wrong pantheon, but I named this machine long before Loki was
-born).
+(I know, I know, the "Hades" hostname above is from the wrong pantheon, but I named this machine
+long before Loki was born).
 
 Copy and paste that content (the ed25519 key is supposed to be twice as long) and back it up
 somewhere.  If you ever need to restore it you would use:
