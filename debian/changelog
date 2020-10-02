@@ -1,3 +1,9 @@
+loki-multi-sn (0.11) UNRELEASED; urgency=medium
+
+  * Upgrade for 8.x compatibility.
+
+ -- Jason Rhinelander <jason@imaginary.ca>  Thu, 01 Oct 2020 23:55:08 -0300
+
 loki-multi-sn (0.10) sid; urgency=medium
 
   * increase FD limits for lokid and ss
