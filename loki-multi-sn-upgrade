@@ -13,9 +13,11 @@ if [ "$UID" -ne 0 ]; then
 fi
 
 ss_upgrade=()
+lokinet_upgrade=()
+
+shopt -s nullglob
 
 echo "Finding storage server configs that need upgrading:"
-shopt -s nullglob
 for x in /etc/loki/storage-[0-9][0-9].conf; do
     if ! grep -q lmq-port $x; then
         ss_upgrade+=("$x")
@@ -23,19 +25,46 @@ for x in /etc/loki/storage-[0-9][0-9].conf; do
     fi
 done
 
-if [ "${#ss_upgrade[@]}" -eq 0 ]; then
+echo "Finding lokinet configs that need upgrading:"
+for x in /etc/loki/lokinet-router-[0-9][0-9].conf; do
+    if grep -q ^jsonrpc $x; then
+        lokinet_upgrade+=("$x")
+        echo "    - $x"
+    fi
+done
+
+if [ "${#ss_upgrade[@]}" -eq 0 ] && [ "${#lokinet_upgrade[@]}" -eq 0 ]; then
     echo "Nothing to upgrade"
     exit 0
 fi
 
-read -p "Press enter to add the new lmq-port option (on port 202XX) to the above configs, Ctrl-C to abort."
-echo
+restarts=()
 
-for ss in "${ss_upgrade[@]}"; do
-    num=${ss/*-/}
-    num=${num/.conf/}
-    echo "lmq-port=202$num" >>$ss
-    echo "Added port 202$num to $ss"
-done
+if [ "${#ss_upgrade[@]}" -gt 0 ]; then
+    read -p "Press enter to add the new lmq-port option (on port 202XX) to the above SS configs, Ctrl-C to abort."
+    echo
 
-echo -e "\nAll done.  You probably want to run this now:\n\nsystemctl restart loki-storage-servers.target\n"
+    for ss in "${ss_upgrade[@]}"; do
+        num=${ss/*-/}
+        num=${num/.conf/}
+        echo "lmq-port=202$num" >>$ss
+        echo "Added port 202$num to $ss"
+    done
+
+    restarts+=("loki-storage-servers.target")
+fi
+
+if [ "${#lokinet_upgrade[@]}" -gt 0 ]; then
+    read -p "Press enter to change the old jsonrpc= option to rpc=... in the above lokinet configs, Ctrl-C to abort."
+
+    for ln in "${lokinet_upgrade[@]}"; do
+        num=${ln/*-/}
+        num=${num/.ini/}
+        perl -pi -e "s{^jsonrpc=.*}{rpc=ipc:///var/lib/loki/node-$num/lokid.sock}" $ln
+        echo "Updated RPC setting in $ln"
+    done
+
+    restarts+=("lokinet-routers.target")
+fi
+
+echo -e "\nAll done.  You probably want to run this now:\n\nsystemctl restart ${restarts[*]}\n"

@@ -1,8 +1,8 @@
-loki-multi-sn (0.11) UNRELEASED; urgency=medium
+loki-multi-sn (0.12) sid; urgency=medium
 
   * Upgrade for 8.x compatibility.
 
- -- Jason Rhinelander <jason@imaginary.ca>  Thu, 01 Oct 2020 23:55:08 -0300
+ -- Jason Rhinelander <jason@imaginary.ca>  Fri, 02 Oct 2020 19:04:05 -0300
 
 loki-multi-sn (0.10) sid; urgency=medium
 

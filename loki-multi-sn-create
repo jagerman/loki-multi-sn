@@ -38,7 +38,6 @@ service-node-public-ip=$ip
 storage-server-port=221$PT
 p2p-bind-port=222$PT
 rpc-bind-port=223$PT
-zmq-rpc-bind-port=224$PT
 quorumnet-port=225$PT
 data-dir=/var/lib/loki/node-$PT
 EOF
@@ -58,25 +57,24 @@ chown _loki:_loki /var/lib/loki/storage-$PT
 
 echo "Creating $lokinet_conf"
 tmpdir=$(mktemp --tmpdir -d lokinet.XXXXXXXXXX)
-/usr/bin/lokinet -r $tmpdir/lokinet.ini
+/usr/bin/lokinet -r -g $tmpdir/lokinet.ini
 perl -pi -e "
     s#$tmpdir#/var/lib/lokinet/router-$PT#;
     if (/^\[lokid/ ... /^\[/) {
-        s#enabled=false#enabled=true#;
-        s#jsonrpc=127\.0\.0\.1:22023#jsonrpc=127.0.0.1:223$PT#;
+        s{^#?rpc=.*}{rpc=ipc:///var/lib/loki/node-$PT/lokid.sock};
     }
     if (/^\[bind/ ... /^\[/) {
-        s#^(.*)=1090#\$1=109$PT#;
+        s{^(.*)=(1090|0)}{0.0.0.0=109$PT};
     }
     if (/^\[dns/ ... /^\[/) {
-        s/^upstream=/#upstream=/;
-        s#bind=(?:.*):53#bind=127.1$PT.0.0:53#;
+        s{^#bind=(?:.*):53}{bind=127.1$PT.0.0:53};
     }
     if (/^\[api/ ... /^\[/) {
-        s#bind=127.0.0.1:1190#bind=127.1$PT.0.0:1190#;
+        s{^#?bind=127.0.0.1:1190}{bind=127.1$PT.0.0:1190};
     }
     if (/^\[network\]/) {
-        s#\$#\nifname=lokitun$PT\nifaddr=10.1$PT.0.1/16#;
+        s{^#?ifname=.*}{ifname=lokitun$PT};
+        s{^#?ifaddr=.*}{ifaddr=10.1$PT.0.1/16}
     }
 " $tmpdir/lokinet.ini
 chmod 640 $tmpdir/lokinet.ini

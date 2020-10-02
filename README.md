@@ -177,6 +177,11 @@ and you will have a `lokid_all` command that runs a command on *all* the lokids,
 
 ### Upgrades
 
+A `loki-multi-sn-upgrade` script is installed that you should run after upgrading the loki-multi-sn
+package.  It looks for upgrade-needed generated config files and upgrades them for you.  (When there
+is nothing to upgrade it doesn't do anything, so always safe to run it, particularly for major
+upgrades).
+
 You need to be a bit more careful when updating.  When you upgrade one or more of the debs, only the
 basic services (`loki-node.service`, `loki-storage-server.service`, and/or `lokinet-router.service`)
 will be restart but *not* the templated versions, so you will need to do this manually.  One way is
