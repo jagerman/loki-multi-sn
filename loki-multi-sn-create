@@ -63,11 +63,15 @@ perl -pi -e "
     if (/^\[lokid/ ... /^\[/) {
         s{^#?rpc=.*}{rpc=ipc:///var/lib/loki/node-$PT/lokid.sock};
     }
+    if (/^\[router/ ... /^\[/) {
+        s{#?public-ip=.*}{public-ip=$ip};
+        s{#?public-port=.*}{public-port=109$PT};
+    }
     if (/^\[bind/ ... /^\[/) {
         s{^(.*)=(1090|0)}{0.0.0.0=109$PT};
     }
     if (/^\[dns/ ... /^\[/) {
-        s{^#bind=(?:.*):53}{bind=127.1$PT.0.0:53};
+        s{^#?bind=(?:.*):53}{bind=127.1$PT.0.0:53};
     }
     if (/^\[api/ ... /^\[/) {
         s{^#?bind=127.0.0.1:1190}{bind=127.1$PT.0.0:1190};
