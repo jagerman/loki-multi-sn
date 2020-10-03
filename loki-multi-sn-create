@@ -80,6 +80,9 @@ perl -pi -e "
         s{^#?ifname=.*}{ifname=lokitun$PT};
         s{^#?ifaddr=.*}{ifaddr=10.1$PT.0.1/16}
     }
+    if (/^\[bootstrap/ ... /^\[/) {
+        s{^#?add-node=.*}{add-node=/var/lib/lokinet/router-$PT/bootstrap.signed};
+    }
 " $tmpdir/lokinet.ini
 chmod 640 $tmpdir/lokinet.ini
 chgrp _loki $tmpdir/lokinet.ini

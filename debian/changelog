@@ -1,6 +1,7 @@
 loki-multi-sn (0.14) sid; urgency=medium
 
   * Fix lokinet config in create script.
+  * Specify bootstrap file explicitly.
 
  -- Jason Rhinelander <jason@imaginary.ca>  Sat, 03 Oct 2020 13:01:29 -0300
 
