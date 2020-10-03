@@ -1,3 +1,9 @@
+loki-multi-sn (0.13) sid; urgency=medium
+
+  * Fix bad filename in lokinet upgrade script.
+
+ -- Jason Rhinelander <jason@imaginary.ca>  Fri, 02 Oct 2020 22:20:23 -0300
+
 loki-multi-sn (0.12) sid; urgency=medium
 
   * Upgrade for 8.x compatibility.

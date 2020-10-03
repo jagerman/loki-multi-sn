@@ -26,7 +26,7 @@ for x in /etc/loki/storage-[0-9][0-9].conf; do
 done
 
 echo "Finding lokinet configs that need upgrading:"
-for x in /etc/loki/lokinet-router-[0-9][0-9].conf; do
+for x in /etc/loki/lokinet-router-[0-9][0-9].ini; do
     if grep -q ^jsonrpc $x; then
         lokinet_upgrade+=("$x")
         echo "    - $x"
