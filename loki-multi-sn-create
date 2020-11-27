@@ -68,7 +68,7 @@ perl -pi -e "
         s{#?public-port=.*}{public-port=109$PT};
     }
     if (/^\[bind/ ... /^\[/) {
-        s{^(.*)=(1090|0)}{0.0.0.0=109$PT};
+        \$_ = qq{0.0.0.0=109$PT\n\n} if /^$/ and not \$added_bind++;
     }
     if (/^\[dns/ ... /^\[/) {
         s{^#?bind=(?:.*):53}{bind=127.1$PT.0.0:53};
