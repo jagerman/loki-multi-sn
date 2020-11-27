@@ -1,3 +1,11 @@
+loki-multi-sn (0.15) sid; urgency=medium
+
+  * Switch to new rpc-admin lokid option
+  * Fix generated lokinet config
+  * Bump required versions to current stable
+
+ -- Jason Rhinelander <jason@imaginary.ca>  Fri, 27 Nov 2020 15:48:45 -0400
+
 loki-multi-sn (0.14) sid; urgency=medium
 
   * Fix lokinet config in create script.
