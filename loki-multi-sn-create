@@ -37,7 +37,7 @@ service-node=1
 service-node-public-ip=$ip
 storage-server-port=221$PT
 p2p-bind-port=222$PT
-rpc-bind-port=223$PT
+rpc-admin=127.0.0.1:223$PT
 quorumnet-port=225$PT
 data-dir=/var/lib/loki/node-$PT
 EOF
