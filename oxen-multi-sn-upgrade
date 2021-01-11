@@ -3,7 +3,7 @@
 set -e
 
 if [ "$#" -ne 0 ]; then
-    echo "Usage: loki-multi-sn-upgrade"
+    echo "Usage: oxen-multi-sn-upgrade"
     exit 1
 fi
 
@@ -12,10 +12,21 @@ if [ "$UID" -ne 0 ]; then
     exit 1
 fi
 
+oxend_upgrade=()
 ss_upgrade=()
 lokinet_upgrade=()
 
 shopt -s nullglob
+
+echo "Finding oxend configs that need upgrade:"
+for x in /etc/loki/node-[0-9][0-9].conf; do
+    ox="${x/loki/oxen}"
+    if [ -e "$ox" ]; then
+        echo "Error: $ox already exists, aborting migration to avoid potentially overwriting things" >&2
+        exit 1
+    fi
+    oxend_upgrade+=("$x")
+done
 
 echo "Finding storage server configs that need upgrading:"
 for x in /etc/loki/storage-[0-9][0-9].conf; do
@@ -33,12 +44,23 @@ for x in /etc/loki/lokinet-router-[0-9][0-9].ini; do
     fi
 done
 
-if [ "${#ss_upgrade[@]}" -eq 0 ] && [ "${#lokinet_upgrade[@]}" -eq 0 ]; then
+if [ "${#oxend_upgrade[@]}${#ss_upgrade[@]}${#lokinet_upgrade[@]}" == "000" ]; then
     echo "Nothing to upgrade"
     exit 0
 fi
 
 restarts=()
+
+if [ "${#oxend_upgrade[@]}" -gt 0 ]; then
+    read -p "Press enter to rename the above /etc/loki/node-*.conf files to /etc/oxen/node-*.conf, Ctrl-C to abort."
+    echo
+
+    for ox in "${oxend_upgrade[@]}"; do
+        mv -v "${ox}" "${ox/loki/oxen}"
+    done
+
+    restarts+=("oxen-service-nodes.target")
+fi
 
 if [ "${#ss_upgrade[@]}" -gt 0 ]; then
     read -p "Press enter to add the new lmq-port option (on port 202XX) to the above SS configs, Ctrl-C to abort."
@@ -60,7 +82,7 @@ if [ "${#lokinet_upgrade[@]}" -gt 0 ]; then
     for ln in "${lokinet_upgrade[@]}"; do
         num=${ln/*-/}
         num=${num/.ini/}
-        perl -pi -e "s{^jsonrpc=.*}{rpc=ipc:///var/lib/loki/node-$num/lokid.sock}" $ln
+        perl -pi -e "s{^jsonrpc=.*}{rpc=ipc:///var/lib/oxen/node-$num/oxend.sock}" $ln
         echo "Updated RPC setting in $ln"
     done
 

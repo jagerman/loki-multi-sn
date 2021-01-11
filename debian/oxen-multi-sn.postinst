@@ -1,0 +1,15 @@
+#!/bin/sh -e
+
+if [ "$1" = configure ]; then
+    . /usr/share/debconf/confmodule
+
+    if [ "$2" != "" ] && dpkg --compare-versions "$2" lt '0.7'; then
+        db_input critical oxen-multi-sn/v7upgrade || true
+        db_go || true
+    fi
+
+    if [ "$2" != "" ] && dpkg --compare-versions "$2" lt '0.16'; then
+        db_input critical oxen-multi-sn/oxen-upgrade || true
+        db_go || true
+    fi
+fi

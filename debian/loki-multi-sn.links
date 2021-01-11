@@ -1,0 +1,2 @@
+/usr/bin/oxen-multi-sn-create /usr/bin/loki-multi-sn-create
+/usr/bin/oxen-multi-sn-upgrade /usr/bin/loki-multi-sn-upgrade

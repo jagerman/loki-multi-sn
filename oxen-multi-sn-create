@@ -3,7 +3,7 @@
 set -e
 
 if [ "$#" -ne 1 ] || [[ ! $1 =~ ^[0-9][0-9]$ ]]; then
-    echo "Usage: loki-multi-sn-create XX where XX is a two-digit number."
+    echo "Usage: oxen-multi-sn-create XX where XX is a two-digit number."
     exit 1
 fi
 
@@ -13,11 +13,11 @@ if [ "$UID" -ne 0 ]; then
 fi
 
 PT=$1
-lokid_conf=/etc/loki/node-$PT.conf
+oxend_conf=/etc/oxen/node-$PT.conf
 ss_conf=/etc/loki/storage-$PT.conf
 lokinet_conf=/etc/loki/lokinet-router-$PT.ini
 if [ -z "$OVERWRITE" ]; then
-    for x in $lokid_conf $ss_conf $lokinet_conf /var/lib/loki/node-$PT /var/lib/lokinet/router-$PT /var/lib/loki/storage-$PT; do
+    for x in $oxend_conf $ss_conf $lokinet_conf /var/lib/oxen/node-$PT /var/lib/lokinet/router-$PT /var/lib/loki/storage-$PT; do
         if [ -e $x ]; then
             echo "$x already exists, refusing to overwrite."
             exit 1
@@ -31,18 +31,18 @@ if [ -z "$ip" ]; then
     exit 2
 fi
 
-echo "Creating $lokid_conf"
-cat <<EOF >$lokid_conf
+echo "Creating $oxend_conf"
+cat <<EOF >$oxend_conf
 service-node=1
 service-node-public-ip=$ip
 storage-server-port=221$PT
 p2p-bind-port=222$PT
 rpc-admin=127.0.0.1:223$PT
 quorumnet-port=225$PT
-data-dir=/var/lib/loki/node-$PT
+data-dir=/var/lib/oxen/node-$PT
 EOF
-mkdir -p /var/lib/loki/node-$PT
-chown _loki:_loki /var/lib/loki/node-$PT
+mkdir -p /var/lib/oxen/node-$PT
+chown _loki:_loki /var/lib/oxen/node-$PT
 
 echo "Creating $ss_conf"
 cat <<EOF >$ss_conf
@@ -50,10 +50,10 @@ ip=0.0.0.0
 port=221$PT
 lmq-port=202$PT
 lokid-rpc-port=223$PT
-data-dir=/var/lib/loki/storage-$PT
+data-dir=/var/lib/oxen/storage-$PT
 EOF
-mkdir -p /var/lib/loki/storage-$PT
-chown _loki:_loki /var/lib/loki/storage-$PT
+mkdir -p /var/lib/oxen/storage-$PT
+chown _loki:_loki /var/lib/oxen/storage-$PT
 
 echo "Creating $lokinet_conf"
 tmpdir=$(mktemp --tmpdir -d lokinet.XXXXXXXXXX)
@@ -61,7 +61,7 @@ tmpdir=$(mktemp --tmpdir -d lokinet.XXXXXXXXXX)
 perl -pi -e "
     s#$tmpdir#/var/lib/lokinet/router-$PT#;
     if (/^\[lokid/ ... /^\[/) {
-        s{^#?rpc=.*}{rpc=ipc:///var/lib/loki/node-$PT/lokid.sock};
+        s{^#?rpc=.*}{rpc=ipc:///var/lib/loki/node-$PT/oxend.sock};
     }
     if (/^\[router/ ... /^\[/) {
         s{#?public-ip=.*}{public-ip=$ip};
@@ -98,11 +98,11 @@ systemctl enable loki{-node,-storage-server,net-router}@$PT.service
 echo -e "\n\nServices configured to auto-start.  Press enter to actually start services now,"
 echo -e     "or Ctrl-C if you want to look around first before launching them.  Note that if"
 echo -e     "you hit Ctrl-C here you will have to start them yourself using:\n"
-echo -e     "    systemctl start loki-node@$PT loki-storage-server@$PT lokinet-router@$PT\n"
+echo -e     "    systemctl start oxen-node@$PT loki-storage-server@$PT lokinet-router@$PT\n"
 read
 
 echo "Starting services..."
 
-systemctl start loki{-node,-storage-server,net-router}@$PT.service
+systemctl start {oxen-node,loki-storage-server,lokinet-router}@$PT.service
 
 echo "All done!\n"

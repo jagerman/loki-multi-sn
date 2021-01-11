@@ -15,7 +15,7 @@ others.
 ## Warning - Hardware requirements
 
 You also should take care to make sure the machine is capable of handling it.  For *each* service
-node you want to run, assuming the box is only being used only for loki service nodes, you will
+node you want to run, assuming the box is only being used only for Oxen service nodes, you will
 need the following (but note that these requirements are likely to increase in the future):
 
 - 1/2 of a dedicated server high performance core (Ryzen or modern Intel Core).  A little bit more
@@ -52,25 +52,25 @@ handle twice the CPU load of this VPS).
 
 ## Installing the package
 
-This package installs a loki-multi-sn debian/ubuntu package which installs systemd service templates
-named `loki-node@.service`, `loki-storage-server@.service`, `lokinet-router@.service` as well as
-systemd targets named `loki-nodes.target`, `loki-storage-servers.target`, and
+This package installs a oxen-multi-sn debian/ubuntu package which installs systemd service templates
+named `oxen-node@.service`, `loki-storage-server@.service`, `lokinet-router@.service` as well as
+systemd targets named `oxen-nodes.target`, `loki-storage-servers.target`, and
 `lokinet-routers.target`.
 
-There will *also* be a lokid service node running on the default port (or you may have it already
-configured and running).  It will use the basic, untemplated service files (`loki-node.service`,
+There will *also* be a oxend service node running on the default port (or you may have it already
+configured and running).  It will use the basic, untemplated service files (`oxen-node.service`,
 `loki-storage-server.service`, and `lokinet-router.service`).
 
-Alternatively you can mask these services before installing *any* of the loki debs to prevent them
+Alternatively you can mask these services before installing *any* of the oxen debs to prevent them
 from running; it'll work either way.  To mask them so that only the templated service nodes
-described below get activated, run this command *before* installing lokid, loki-storage-server,
+described below get activated, run this command *before* installing oxend, loki-storage-server,
 or this package:
 
-    sudo systemctl mask loki-node.service loki-storage-server.service lokinet-router.service
+    sudo systemctl mask oxen-node.service loki-storage-server.service lokinet-router.service
 
 Once masked, you can install using:
 
-    sudo apt install loki-multi-sn
+    sudo apt install oxen-multi-sn
 
 which will install them but, because they are masked, not start them.  (If you already have one
 running with the basic debs then just don't unmask: you'll continue to have the default services
@@ -89,13 +89,12 @@ number XX:
 
 Public address listeners:
 - storage server will listen on ports 221XX and 202XX (on the public IP)
-- lokid p2p will listen on port 222XX (on the public IP)
-- lokid quorumnet will listen on port 225XX (on the public IP)
+- oxend p2p will listen on port 222XX (on the public IP)
+- oxend quorumnet will listen on port 225XX (on the public IP)
 - lokinet will listen on UDP port 109XX (on the public IP)
 
 Internal (localhost) listeners:
-- lokid rpc will listen on port 223XX
-- lokid zmq rpc will listen on port 224XX
+- oxend rpc will listen on port 223XX
 - lokinet rpc will listen on port 119XX
 - the lokinet router will add and use local network 10.1XX.0.0/16 on a virtual interface named
   lokitunXX, on which the local snode is available at 10.1XX.0.1 (you probably don't need to worry
@@ -110,50 +109,50 @@ a firewall that blocks everything, add appropriate exceptions for *each* SN's fi
 Enable and start your service node cluster using the number you chose above (I'll continue using 42
 as an example):
 
-    sudo loki-multi-sn-create 42
+    sudo oxen-multi-sn-create 42
 
 This will set up basic configurations for the service node components, and enable and start these
 services:
 
-    loki-node@42.service
+    oxen-node@42.service
     loki-storage-server@42.service
     lokinet-router@42.service
 
 If you want to control just one service, you use these templated names to manage the services.  For
-example, to stop just this lokid:
+example, to stop just this oxend:
 
-    systemctl stop loki-node@42.service
+    systemctl stop oxen-node@42.service
 
 or to view loki-storage-server log output:
 
     journalctl -u loki-storage-server@42 -af
 
-The lokid data will be inside /var/lib/loki/node-42, the storage server data will be inside
+The oxend data will be inside /var/lib/oxen/node-42, the storage server data will be inside
 /var/lib/loki/storage-42, and the lokinet data will be inside /var/lib/lokinet/router-42.
-Configuration for each will be in /etc/loki/node-42.conf, /etc/loki/storage-42.conf, and
+Configuration for each will be in /etc/oxen/node-42.conf, /etc/loki/storage-42.conf, and
 /etc/loki/lokinet-router-42.ini.
 
 You will most likely want one additional piece to be able to query the service node: inside your
 ~/.bashrc add the following:
 
-    for n in /etc/loki/node-*.conf; do
+    for n in /etc/oxen/node-*.conf; do
         p=${n/*node-/}
         p=${p/.conf/}
-        alias lokid-$p="lokid --config=$n"
+        alias oxend-$p="oxend --config=$n"
     done
-    lokid_all() {
-        for n in /etc/loki/node-*.conf; do
+    oxend_all() {
+        for n in /etc/oxen/node-*.conf; do
             p=${n/*node-/}
             p=${p/.conf/}
-            echo -e "\nlokid-$p:"
-            lokid --config=$n "$@"
+            echo -e "\noxend-$p:"
+            oxend --config=$n "$@"
         done
     }
 
-When you log out and log in again you will now have a `lokid-42` alias that invokes commands on your
+When you log out and log in again you will now have a `oxend-42` alias that invokes commands on your
 node 42, such as checking the status:
 
-    $ lokid-42 status
+    $ oxend-42 status
     2019-12-29 02:22:36.107	I Loki 'Nimble Nerthus' (v6.1.0-1f61de91b)
     2019-12-29 02:22:36.107	I Generating SSL certificate
     Height: 434477/434477 (100.0%), net hash 54.78 MH/s, v6.1.0(net v13) (next fork in 10.9 days), up to date, 8(out)+11(in) connections, uptime 1d 6h 57m 4s

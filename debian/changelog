@@ -1,3 +1,9 @@
+oxen-multi-sn (0.16) sid; urgency=medium
+
+  * Updates for oxen rename
+
+ -- Jason Rhinelander <jason@imaginary.ca>  Mon, 11 Jan 2021 18:14:44 -0400
+
 loki-multi-sn (0.15) sid; urgency=medium
 
   * Switch to new rpc-admin lokid option

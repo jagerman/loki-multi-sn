@@ -10,3 +10,15 @@ Description: v7.x upgrade instructions
  .
  which will automatically add lmq-port=202XX options to any existing
  /etc/loki/storage-XX.conf files.  You should only have to do this once.
+
+Template: loki-multi-sn/oxen-upgrade
+Type: note
+Description: oxen rebrand upgrade instructions
+ With the 8.1.5 oxen rebrand release the oxend configuration files need to be moved from
+ /etc/loki/node-*.conf to /etc/oxen/node-*.conf.
+ .
+ This can typically be done for you by running:
+ .
+     sudo oxen-multi-sn-upgrade
+ .
+ after package upgrade finishes (or alternatively you can move the files yourself).
