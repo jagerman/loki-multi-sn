@@ -60,7 +60,7 @@ if [ "${#oxend_upgrade[@]}" -gt 0 ]; then
         mv -v "${ox}" "${ox/loki/oxen}"
     done
 
-    restarts+=("oxen-service-nodes.target")
+    restarts+=("oxen-nodes.target")
 fi
 
 if [ "${#ss_upgrade[@]}" -gt 0 ]; then
