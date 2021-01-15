@@ -18,7 +18,7 @@ lokinet_upgrade=()
 
 shopt -s nullglob
 
-echo "Finding oxend configs that need upgrade:"
+echo "Finding lokid->oxend configs that need migration:"
 for x in /etc/loki/node-[0-9][0-9].conf; do
     ox="${x/loki/oxen}"
     if [ -e "$ox" ]; then
@@ -29,12 +29,15 @@ for x in /etc/loki/node-[0-9][0-9].conf; do
     echo "    - $x"
 done
 
-echo "Finding storage server configs that need upgrading:"
+echo "Finding storage server configs that need migration:"
 for x in /etc/loki/storage-[0-9][0-9].conf; do
-    if ! grep -q lmq-port $x; then
-        ss_upgrade+=("$x")
-        echo "    - $x"
+    ox="${x/loki/oxen}"
+    if [ -e "$ox" ]; then
+        echo "Error: $ox already exists, aborting migration to avoid potentially overwriting things" >&2
+        exit 1
     fi
+    ss_upgrade+=("$x")
+    echo "    - $x"
 done
 
 echo "Finding lokinet configs that need upgrading:"
@@ -53,31 +56,61 @@ fi
 restarts=()
 
 if [ "${#oxend_upgrade[@]}" -gt 0 ]; then
-    read -p "Press enter to rename the above /etc/loki/node-*.conf files to /etc/oxen/node-*.conf, Ctrl-C to abort."
+    echo -e "\n"
+    read -p "Press enter to move /etc/loki/node-*.conf files to /etc/oxen and switch the active services to oxen-node@XX.service, Ctrl-C to abort."
     echo
 
+    stops=()
+    starts=()
     for ox in "${oxend_upgrade[@]}"; do
+        NN=${ox/*node-/}
+        NN=${NN/.conf/}
         mv -v "${ox}" "${ox/loki/oxen}"
+        if systemctl -q is-enabled loki-node@$NN; then
+            stops+=("loki-node@$NN")
+            starts+=("oxen-node@$NN")
+        fi
     done
-
-    restarts+=("oxen-nodes.target")
+    if [ "${#stops[@]}" -gt 0 ]; then
+        echo "Switching active services from loki-node@XX to oxen-node@XX"
+        systemctl disable "${stops[@]}"
+        systemctl enable "${starts[@]}"
+        echo "Stopping ${stops[*]}"
+        systemctl stop "${stops[@]}"
+        echo "Starting ${starts[*]}"
+        systemctl start "${starts[@]}"
+    fi
 fi
 
 if [ "${#ss_upgrade[@]}" -gt 0 ]; then
-    read -p "Press enter to add the new lmq-port option (on port 202XX) to the above SS configs, Ctrl-C to abort."
+    echo -e "\n"
+    read -p "Press enter to move /etc/loki/storage-*.conf files to /etc/oxen and switch the active services to oxen-storage-server@XX.service, Ctrl-C to abort."
     echo
 
-    for ss in "${ss_upgrade[@]}"; do
-        num=${ss/*-/}
-        num=${num/.conf/}
-        echo "lmq-port=202$num" >>$ss
-        echo "Added port 202$num to $ss"
+    stops=()
+    starts=()
+    for ox in "${ss_upgrade[@]}"; do
+        NN=${ox/*storage-/}
+        NN=${NN/.conf/}
+        mv -v "${ox}" "${ox/loki/oxen}"
+        if systemctl -q is-enabled loki-storage-server@$NN; then
+            stops+=("loki-storage-server@$NN")
+            starts+=("oxen-storage-server@$NN")
+        fi
     done
-
-    restarts+=("loki-storage-servers.target")
+    if [ "${#stops[@]}" -gt 0 ]; then
+        echo "Switching active services from loki-storage-server@XX to oxen-storage-server@XX"
+        systemctl disable "${stops[@]}"
+        systemctl enable "${starts[@]}"
+        echo "Stopping ${stops[*]}"
+        systemctl stop "${stops[@]}"
+        echo "Starting ${starts[*]}"
+        systemctl start "${starts[@]}"
+    fi
 fi
 
 if [ "${#lokinet_upgrade[@]}" -gt 0 ]; then
+    echo -e "\n"
     read -p "Press enter to change the old jsonrpc= option to rpc=... in the above lokinet configs, Ctrl-C to abort."
 
     for ln in "${lokinet_upgrade[@]}"; do
@@ -90,4 +123,7 @@ if [ "${#lokinet_upgrade[@]}" -gt 0 ]; then
     restarts+=("lokinet-routers.target")
 fi
 
-echo -e "\nAll done.  You probably want to run this now:\n\nsystemctl restart ${restarts[*]}\n"
+echo -e "\nAll done."
+if [ "${#restarts[*]}" -gt 0 ]; then
+    echo -e "You probably want to run this now:\n\nsystemctl restart ${restarts[*]}\n"
+fi

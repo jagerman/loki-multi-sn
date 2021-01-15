@@ -1,17 +1,17 @@
 [Unit]
 Description=Oxen network node (%i)
 After=network-online.target
-PartOf=oxen-nodes.target
+PartOf=loki-nodes.target
 
 [Service]
 User=_loki
 Type=notify
 WatchdogSec=5min
-WorkingDirectory=/var/lib/oxen
+WorkingDirectory=/var/lib/loki
 LimitNOFILE=16384
 Restart=always
 RestartSec=5s
-ExecStart=/usr/bin/oxend --non-interactive --config-file /etc/oxen/node-%i.conf
+ExecStart=/usr/bin/lokid --non-interactive --config-file /etc/loki/node-%i.conf
 # Enable coloured daemon output:
 Environment=TERM=xterm
 

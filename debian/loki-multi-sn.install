@@ -1,0 +1,2 @@
+loki-node@.service /lib/systemd/system
+loki-nodes.target /lib/systemd/system

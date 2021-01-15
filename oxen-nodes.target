@@ -1,5 +1,2 @@
 [Unit]
-Description=loki nodes
-
-[Install]
-Alias=loki-nodes.target
+Description=oxen nodes
