@@ -25,7 +25,7 @@ Description: Oxen service node multi-SN helper package
 Package: loki-multi-sn
 Architecture: all
 Section: oldlibs
-Depends: oxen-multi-sn, lokid
+Depends: oxen-multi-sn, lokid (>= 8.1.5-1~), loki-storage-server (>= 2.0.8-1~)
 Description: transitional package
  Contains multi-sn aliases for oxen -> loki rename.
  .
