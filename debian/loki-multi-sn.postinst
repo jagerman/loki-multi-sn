@@ -1,0 +1,55 @@
+#!/bin/sh -e
+
+set -e
+
+if [ "$1" = configure ] && [ -d /run/systemd/system ]; then
+    svc_disable=
+    svc_enable=
+    svc_stop=
+    svc_start=
+    for component in node storage-server; do
+        conf_prefix=node-
+        conf_suffix=.conf
+        if [ "$component" = "storage-server" ]; then conf_prefix=storage-; fi
+        for conf in /etc/loki/"$conf_prefix"[0-9][0-9]"$conf_suffix"; do
+            conf=${conf##*/}
+            if [ -f /etc/oxen/$conf ]; then
+                echo "Found /etc/loki/$conf but /etc/oxen/$conf also exists, not migrating" >&2
+                continue
+            fi
+            echo "Migrating /etc/loki/$conf -> /etc/oxen/$conf" >&2
+            mv -v /etc/loki/$conf /etc/oxen/$conf
+
+            NN=${conf#$conf_prefix}
+            NN=${NN%$conf_suffix}
+            svc=loki-$component@$NN.service
+            oxen=oxen-$component@$NN.service
+
+            if systemctl is-enabled $svc --quiet; then
+                svc_disable="$svc_disable $svc"
+                svc_enable="$svc_enable $oxen"
+            fi
+            if systemctl is-active $svc --quiet; then
+                svc_stop="$svc_stop $svc"
+                svc_start="$svc_start $oxen"
+            fi
+        done
+    done
+
+    if [ -n "$svc_disable" ]; then
+        echo "Disabling old LOKI services:$svc_disable" >&2
+        systemctl disable $svc_disable
+    fi
+    if [ -n "$svc_enable" ]; then
+        echo "Enabling new OXEN services:$svc_enable" >&2
+        systemctl enable $svc_enable
+    fi
+    if [ -n "$svc_stop" ]; then
+        echo "Stopping old LOKI services:$svc_stop" >&2
+        systemctl stop $svc_stop
+    fi
+    if [ -n "$svc_start" ]; then
+        echo "Starting new OXEN services:$svc_start" >&2
+        systemctl start $svc_start
+    fi
+fi
