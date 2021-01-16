@@ -7,6 +7,7 @@ if [ "$1" = configure ] && [ -d /run/systemd/system ]; then
     svc_enable=
     svc_stop=
     svc_start=
+    systemctl_reloaded=
     for component in node storage-server; do
         conf_prefix=node-
         conf_suffix=.conf
@@ -25,6 +26,11 @@ if [ "$1" = configure ] && [ -d /run/systemd/system ]; then
             NN=${NN%$conf_suffix}
             svc=loki-$component@$NN.service
             oxen=oxen-$component@$NN.service
+
+            if [ -z "$systemctl_reloaded" ]; then
+                systemctl daemon-reload
+                systemctl_reloaded=1
+            fi
 
             if systemctl is-enabled $svc --quiet; then
                 svc_disable="$svc_disable $svc"
