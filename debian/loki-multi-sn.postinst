@@ -12,6 +12,7 @@ if [ "$1" = configure ] && [ -d /run/systemd/system ]; then
         conf_suffix=.conf
         if [ "$component" = "storage-server" ]; then conf_prefix=storage-; fi
         for conf in /etc/loki/"$conf_prefix"[0-9][0-9]"$conf_suffix"; do
+            if ! [ -f "$conf" ]; then continue; fi
             conf=${conf##*/}
             if [ -f /etc/oxen/$conf ]; then
                 echo "Found /etc/loki/$conf but /etc/oxen/$conf also exists, not migrating" >&2
