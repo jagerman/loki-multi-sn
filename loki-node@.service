@@ -1,5 +1,5 @@
 [Unit]
-Description=Oxen network node (%i)
+Description=Loki network node (%i)
 After=network-online.target
 PartOf=loki-nodes.target
 
