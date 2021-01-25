@@ -14,10 +14,10 @@ fi
 
 PT=$1
 oxend_conf=/etc/oxen/node-$PT.conf
-ss_conf=/etc/loki/storage-$PT.conf
+ss_conf=/etc/oxen/storage-$PT.conf
 lokinet_conf=/etc/loki/lokinet-router-$PT.ini
 if [ -z "$OVERWRITE" ]; then
-    for x in $oxend_conf $ss_conf $lokinet_conf /var/lib/oxen/node-$PT /var/lib/lokinet/router-$PT /var/lib/loki/storage-$PT; do
+    for x in $oxend_conf $ss_conf $lokinet_conf /var/lib/oxen/node-$PT /var/lib/lokinet/router-$PT /var/lib/oxen/storage-$PT; do
         if [ -e $x ]; then
             echo "$x already exists, refusing to overwrite."
             exit 1
@@ -98,11 +98,11 @@ systemctl enable loki{-node,-storage-server,net-router}@$PT.service
 echo -e "\n\nServices configured to auto-start.  Press enter to actually start services now,"
 echo -e     "or Ctrl-C if you want to look around first before launching them.  Note that if"
 echo -e     "you hit Ctrl-C here you will have to start them yourself using:\n"
-echo -e     "    systemctl start oxen-node@$PT loki-storage-server@$PT lokinet-router@$PT\n"
+echo -e     "    systemctl start oxen-node@$PT oxen-storage-server@$PT lokinet-router@$PT\n"
 read
 
 echo "Starting services..."
 
-systemctl start {oxen-node,loki-storage-server,lokinet-router}@$PT.service
+systemctl start {oxen-node,oxen-storage-server,lokinet-router}@$PT.service
 
 echo "All done!\n"

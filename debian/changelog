@@ -1,3 +1,9 @@
+oxen-multi-sn (0.18) sid; urgency=medium
+
+  * Fix oxen-multi-sn-create script putting SS config in the old path.
+
+ -- Jason Rhinelander <jason@imaginary.ca>  Mon, 25 Jan 2021 15:32:15 -0400
+
 oxen-multi-sn (0.17) sid; urgency=medium
 
   * Updates for oxen rename
