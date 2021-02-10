@@ -1,3 +1,9 @@
+oxen-multi-sn (0.19) sid; urgency=medium
+
+  * Fix "loki" in create script service name.
+
+ -- Jason Rhinelander <jason@imaginary.ca>  Wed, 10 Feb 2021 11:40:24 -0400
+
 oxen-multi-sn (0.18) sid; urgency=medium
 
   * Fix oxen-multi-sn-create script putting SS config in the old path.

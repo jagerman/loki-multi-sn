@@ -61,7 +61,7 @@ tmpdir=$(mktemp --tmpdir -d lokinet.XXXXXXXXXX)
 perl -pi -e "
     s#$tmpdir#/var/lib/lokinet/router-$PT#;
     if (/^\[lokid/ ... /^\[/) {
-        s{^#?rpc=.*}{rpc=ipc:///var/lib/loki/node-$PT/oxend.sock};
+        s{^#?rpc=.*}{rpc=ipc:///var/lib/oxen/node-$PT/oxend.sock};
     }
     if (/^\[router/ ... /^\[/) {
         s{#?public-ip=.*}{public-ip=$ip};
@@ -93,7 +93,7 @@ ln -snf $lokinet_conf /var/lib/lokinet/router-$PT/lokinet.ini
 chown -R _lokinet:_loki /var/lib/lokinet/router-$PT
 
 echo -e "\n\n\nDone with configuration setup.  Enabling services..."
-systemctl enable loki{-node,-storage-server,net-router}@$PT.service
+systemctl enable {oxen-node,oxen-storage-server,lokinet-router}@$PT.service
 
 echo -e "\n\nServices configured to auto-start.  Press enter to actually start services now,"
 echo -e     "or Ctrl-C if you want to look around first before launching them.  Note that if"
