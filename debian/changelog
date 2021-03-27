@@ -1,3 +1,9 @@
+oxen-multi-sn (0.20) sid; urgency=medium
+
+  * Create /etc/loki in oxen-multi-sn-create if it doesn't exist.
+
+ -- Jason Rhinelander <jason@imaginary.ca>  Sat, 27 Mar 2021 17:01:57 -0300
+
 oxen-multi-sn (0.19) sid; urgency=medium
 
   * Fix "loki" in create script service name.
