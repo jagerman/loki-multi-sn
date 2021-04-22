@@ -1,3 +1,9 @@
+oxen-multi-sn (0.21) sid; urgency=medium
+
+  * Oxen 9 HF support.
+
+ -- Jason Rhinelander <jason@imaginary.ca>  Thu, 22 Apr 2021 18:45:20 -0300
+
 oxen-multi-sn (0.20) sid; urgency=medium
 
   * Create /etc/loki in oxen-multi-sn-create if it doesn't exist.

@@ -50,7 +50,7 @@ cat <<EOF >$ss_conf
 ip=0.0.0.0
 port=221$PT
 lmq-port=202$PT
-lokid-rpc-port=223$PT
+oxend-rpc=ipc:///var/lib/oxen/node-$PT/oxend.sock
 data-dir=/var/lib/oxen/storage-$PT
 EOF
 mkdir -p /var/lib/oxen/storage-$PT

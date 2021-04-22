@@ -15,6 +15,7 @@ fi
 oxend_upgrade=()
 ss_upgrade=()
 lokinet_upgrade=()
+ss210_upgrade=()
 
 shopt -s nullglob
 
@@ -40,6 +41,13 @@ for x in /etc/loki/storage-[0-9][0-9].conf; do
     echo "    - $x"
 done
 
+for x in /etc/oxen/storage-[0-9][0-9].conf; do
+    if ! grep -q oxend-rpc= $x; then
+        ss210_upgrade+=("$x")
+        echo "    - $x"
+    fi
+done
+
 echo "Finding lokinet configs that need upgrading:"
 for x in /etc/loki/lokinet-router-[0-9][0-9].ini; do
     if grep -q ^jsonrpc $x; then
@@ -48,7 +56,7 @@ for x in /etc/loki/lokinet-router-[0-9][0-9].ini; do
     fi
 done
 
-if [ "${#oxend_upgrade[@]}${#ss_upgrade[@]}${#lokinet_upgrade[@]}" == "000" ]; then
+if [ "${#oxend_upgrade[@]}${#ss_upgrade[@]}${#lokinet_upgrade[@]}${#ss210_upgrade[@]}" == "0000" ]; then
     echo "Nothing to upgrade"
     exit 0
 fi
@@ -107,6 +115,8 @@ if [ "${#ss_upgrade[@]}" -gt 0 ]; then
         echo "Starting ${starts[*]}"
         systemctl start "${starts[@]}"
     fi
+
+    echo -e "\e[33;1mNOTE: you need to run this script once more to fully migrate storage server!\e[1m"
 fi
 
 if [ "${#lokinet_upgrade[@]}" -gt 0 ]; then
@@ -121,6 +131,21 @@ if [ "${#lokinet_upgrade[@]}" -gt 0 ]; then
     done
 
     restarts+=("lokinet-routers.target")
+fi
+
+if [ "${#ss210_upgrade[@]}" -gt 0 ]; then
+    echo -e "\n"
+    echo -e "About to change the old lokid-rpc-port=PORT option to oxend-rpc=ipc:///var/lib/oxen/node-XX/oxend.sock"
+    read -p "Press enter to continue, Ctrl-C to abort."
+
+    for ss in "${ss210_upgrade[@]}"; do
+        num=${ss/*storage-/}
+        num=${num/.conf/}
+        perl -pi -e "s{lokid-rpc-port=.*}{oxend-rpc=ipc:///var/lib/oxen/node-$num/oxend.sock}" $ss
+        echo "Updated RPC setting in $ss"
+    done
+
+    restarts+=("oxen-storage-servers.target")
 fi
 
 echo -e "\nAll done."

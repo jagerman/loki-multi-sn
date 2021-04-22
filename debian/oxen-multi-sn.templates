@@ -1,0 +1,14 @@
+Template: oxen-multi-sn/v9ssupgrade
+Type: note
+Description: v9.x upgrade instructions
+ With the 9.x release the Loki storage server requires a new "oxend-rpc" option
+ to be added to multi-sn configuration files before the storage server will
+ start properly.
+ .
+ This package contains a script to help you do this for a multi-sn setup; after
+ installation run:
+ .
+     sudo oxen-multi-sn-upgrade
+ .
+ which will automatically add the option to to any existing
+ /etc/oxen/storage-XX.conf files.  You should only have to do this once.
