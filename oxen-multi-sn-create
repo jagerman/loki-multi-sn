@@ -81,15 +81,11 @@ perl -pi -e "
         s{^#?ifname=.*}{ifname=lokitun$PT};
         s{^#?ifaddr=.*}{ifaddr=10.1$PT.0.1/16}
     }
-    if (/^\[bootstrap/ ... /^\[/) {
-        s{^#?add-node=.*}{add-node=/var/lib/lokinet/router-$PT/bootstrap.signed};
-    }
 " $tmpdir/lokinet.ini
 chmod 640 $tmpdir/lokinet.ini
 chgrp _loki $tmpdir/lokinet.ini
 mv $tmpdir/lokinet.ini $lokinet_conf
 mkdir -p /var/lib/lokinet/router-$PT
-/usr/bin/lokinet-bootstrap lokinet /var/lib/lokinet/router-$PT/bootstrap.signed
 ln -snf $lokinet_conf /var/lib/lokinet/router-$PT/lokinet.ini
 chown -R _lokinet:_loki /var/lib/lokinet/router-$PT
 

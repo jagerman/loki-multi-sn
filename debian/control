@@ -9,7 +9,7 @@ Homepage: https://github.com/jagerman/loki-multi-sn
 Package: oxen-multi-sn
 Architecture: all
 Multi-Arch: foreign
-Depends: curl, oxend (>= 10.2.0-1~), lokinet-bin (>= 0.9.9-1~), oxen-storage-server (>= 2.4.0-1~), debconf
+Depends: curl, oxend (>= 10.2.1-1~), lokinet-bin (>= 0.9.10-1~), oxen-storage-server (>= 2.4.0-1~), debconf
 Replaces: loki-multi-sn (<< 0.16~)
 Breaks: loki-multi-sn (<< 0.16~)
 Description: Oxen service node multi-SN helper package
