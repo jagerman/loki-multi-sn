@@ -4,7 +4,6 @@ After=network-online.target
 Wants=loki-node@%i.service
 After=loki-node@%i.service
 PartOf=lokinet-routers.target
-AssertFileNotEmpty=/var/lib/lokinet/router-%i/bootstrap.signed
 
 [Service]
 User=_lokinet

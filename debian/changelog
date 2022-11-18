@@ -1,3 +1,9 @@
+oxen-multi-sn (0.24) sid; urgency=medium
+
+  * Updates for 10.2.1
+
+ -- Jason Rhinelander <jason@imaginary.ca>  Fri, 18 Nov 2022 16:53:06 -0400
+
 oxen-multi-sn (0.23) sid; urgency=medium
 
   * Bump Depends versions for 10.2.0 release
