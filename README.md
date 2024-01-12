@@ -52,6 +52,8 @@ handle twice the CPU load of this VPS).
 
 ## Installing the package
 
+Pre-built multi-service-node packages are available from the [Oxen apt repo](https://deb.oxen.io).
+
 This package installs a oxen-multi-sn debian/ubuntu package which installs systemd service templates
 named `oxen-node@.service`, `oxen-storage-server@.service`, `lokinet-router@.service` as well as
 systemd targets named `oxen-nodes.target`, `oxen-storage-servers.target`, and
