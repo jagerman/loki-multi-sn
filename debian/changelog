@@ -1,3 +1,10 @@
+oxen-multi-sn (0.25) sid; urgency=medium
+
+  * Updated required versions for 10.4.x mandatory update
+  * Added 202xx UDP port range to ufw config file
+
+ -- Jason Rhinelander <jason@imaginary.ca>  Fri, 01 Mar 2024 11:39:22 +1100
+
 oxen-multi-sn (0.24) sid; urgency=medium
 
   * Updates for 10.2.1

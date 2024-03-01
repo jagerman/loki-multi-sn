@@ -90,7 +90,7 @@ The number you choose will be used in the ports that your service nodes use: for
 number XX:
 
 Public address listeners:
-- storage server will listen on ports 221XX and 202XX (on the public IP)
+- storage server will listen on the public IP on ports 221XX (TCP) and 202XX (*both* TCP *and* UDP).
 - oxend p2p will listen on port 222XX (on the public IP)
 - oxend quorumnet will listen on port 225XX (on the public IP)
 - lokinet will listen on UDP port 109XX (on the public IP)
