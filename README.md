@@ -103,8 +103,9 @@ Internal (localhost) listeners:
   about this).
 
 As an example, let's say I have chosen the number 42.  Then my public IP will have services on ports
-20242, 22142, 22242, 22542, and 11142; with internal (localhost) ports 22342 and 22442.  (If you are using
-a firewall that blocks everything, add appropriate exceptions for *each* SN's five public ports).
+20242 (TCP+UDP), 22142 (TCP), 22242 (TCP), 22542 (TCP), and 10942 (UDP); with internal (localhost)
+ports 22342, 22442, and 11942.  (If you are using a firewall that blocks everything, add appropriate
+exceptions for *each* SN's six [4 TCP, 2 UDP] public ports).
 
 ### Step 2: Enable the service
 
