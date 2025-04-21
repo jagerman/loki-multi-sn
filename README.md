@@ -300,17 +300,21 @@ See the [oxend L2 proxy docs
 page](https://docs.getsession.org/user-guides/session-stagenet-node-setup/how-to-set-up-an-oxend-l2-proxy)
 for more details on how this works.
 
-The scripts in this repository can configure an oxen "NN" node to use an L2 proxy (instead of a
-provider), but do not automatically set it up.  A quick version of a setup that would use the "00"
-node on a server as the l2-provider, with the "01" through "07" nodes using the "00" node as the l2
+The scripts in this package can update or create oxen "NN" nodes that use an L2 proxy (instead of a
+full L2 provider), but the proxy itself must still be configured manually.  See the docs page linked
+above for the overall details.  A quick recipe for setting up the "00" node on a server as the
+l2-provider, with the "01" through "07" nodes on the same machine using the "00" node as the l2
 proxy, is as follows:
 
 0. Obtain access to an Arbitrum One L2 RPC provider.  Ideally obtain access to two different
    providers, so that you can fall back to another provider in case of connectivity issues to the
    first provider.  I will use "https://example.org/arb" and "https://backup.example.com/arb" as my
    primary and backup providers in this example.
-1. Set up the "00" oxen-node using `oxen-multi-sn-create 00 https://example.org/arb https://backup.example.com/arb`.
-2. Reconfigure 00 to act as a proxy by editing `/etc/oxen/node-00.conf` and adding the line:
+1. Set up the "00" oxen-node using `oxen-multi-sn-create 00 https://example.org/arb
+   https://backup.example.com/arb`.  (If the 00 node already exists, double-check that its
+   `l2-provider=` values in `/etc/oxen/node-00.conf` match what you think they should be).
+2. Reconfigure the 00 node to act as a proxy by editing `/etc/oxen/node-00.conf` and adding the
+   line:
 
        l2-proxy=/etc/oxen/proxy-pubkeys.txt
 
@@ -318,19 +322,22 @@ proxy, is as follows:
    in it yet).
 4. Restart node 00: `systemctl restart oxen-node@00`.
 5. Set up the "01" oxen-node using `oxen-multi-sn-create 01 ipc:///var/lib/oxen/node-00/oxend.sock`
-6. Repeat step 4 for 02 through 07.  (Note that the "node-00" part doesn't change).
+6. Repeat step 4 for 02 through 07.  (Note that "01" changes, but the "node-00" part doesn't).
 
 This will result in a setup where the oxen-node@00 is responsible for providing L2 information to
-all the other nodes on the machine.
+all the other nodes on the same server.
 
-If you want to extend this access to service nodes running on remote hosts then you can also do:
+If you want to extend this proxy access to service nodes running on remote servers then you can set
+this up as follows:
 
-7. For each remote oxend that you want to be able to connect, add its pubkey into the
-   /etc/oxen/proxy-pubkeys.txt file.  (You do *not* have to restart the oxen-node@00 oxend after
-   changing this file; it will detect changes and reload it).
+7. For each remote oxend that you want to be able to connect, obtain its pubkey and add it into the
+   /etc/oxen/proxy-pubkeys.txt file on the proxy server.  (You do *not* have to restart the
+   oxen-node@00 oxend after changing this file; it will detect changes and reload it).
 8. Make a note of the oxen-node@00's public IP, its quorumnet port (225NN, e.g. 22500 for
-   oxen-node@00), and its pubkey.  (If you are following these instructions from a very old pre-Oxen
-   8 node with separate primary and Ed25519 pubkeys, you must use the Ed25519 pubkey!)
+   oxen-node@00), and its pubkey.
+   - For steps 7 and 8, if you are following these instructions using a very old pre-Oxen 8 node
+     with separate primary and Ed25519 pubkeys, you must use the Ed25519 pubkeys!
 9. When configuring the remote, for a non-multi-sn setup, specify "l2-oxend=IP:PORT/PUBKEY".  For a
    multi-sn setup, run `oxen-multi-sn-create NN l2-oxend IP:PORT/PUBKEY` for a new node, or
-   `oxen-multi-sn-upgrade l2-oxend IP:PORT/PUBKEY` when first upgrading a node to the 11.2+ release.
+   `oxen-multi-sn-upgrade l2-oxend IP:PORT/PUBKEY` when first upgrading a multi-sn server to the
+   11.2+ release.
