@@ -1,4 +1,4 @@
-# Oxen Multi SN Setup
+# Session Multi SN Setup
 
 The deb produced here gives you systemd service templates to help you run multiple service nodes on
 one machine.
@@ -112,7 +112,10 @@ exceptions for *each* SN's six [4 TCP, 2 UDP] public ports).
 Enable and start your service node cluster using the number you chose above (I'll continue using 42
 as an example):
 
-    sudo oxen-multi-sn-create 42
+    sudo oxen-multi-sn-create 42 https://l2.provider.example.org/rpc http://1.2.3.4/arb-rpc
+
+where the arguments after "42" specify the l2-providers to use.  (You can also use oxend proxies;
+run the script without any arguments for more usage info).
 
 This will set up basic configurations for the service node components, and enable and start these
 services:
@@ -177,7 +180,7 @@ and you will have a `oxend_all` command that runs a command on *all* the oxends,
     Height: 434484/434484 (100.0%), net hash 53.24 MH/s, v6.1.0(net v13) (next fork in 10.9 days), up to date, 8(out)+14(in) connections, uptime 1d 7h 4m 35s
     SN: 44e8e7ef21e9ff147b82f6409802adb682c2c91dee30b89f5199393866bc2a6c active, proof: 32 seconds ago, last pings: 9sec (storage), 4.9min (lokinet)
 
-### Upgrades
+## Upgrades
 
 A `oxen-multi-sn-upgrade` script is installed that you should run after upgrading the oxen-multi-sn
 package.  It looks for upgrade-needed generated config files and upgrades them for you.  (When there
@@ -209,15 +212,17 @@ Note, however, that targets only apply to currently running services, so if you 
 you *cannot* use `sudo systemctl start oxen-nodes.target` to start them all: it will only restart
 nodes that are already running.
 
-### Managing service node keys
+## Managing service node keys
 
 You should keep a backup of your service node's private keys.  If your server node were to
 irrecoverably crash or your ISP disconnects you, you will need them to set up your SN somewhere
 else.
 
-If you know how to properly make a copy of a binary file (e.g. using scp) then do it for
-`/var/lib/oxen/node-NN/key_ed25519` and, if it exists, `/var/lib/oxen/node-NN/key`, for whatever
-`NN` nodes you have set up.
+If you know how to properly make a copy of a binary file (e.g. using scp) then back these files up
+for whatever `NN` nodes you have set up:
+- `/var/lib/oxen/node-NN/key_ed25519`
+- `/var/lib/oxen/node-NN/key_bls` (new for Oxen 11!)
+- if it exists, `/var/lib/oxen/node-NN/key`
 
 Otherwise, a convenient way to back them up is to use the oxen-sn-keys tool (included with oxend)
 which lets you convert the binary keys into plain text data that you can easily copy and paste and
@@ -230,30 +235,37 @@ save somewhere.  For example:
     Public key:  cbcbb4d5527450d877420ccb90a3c3ae44b04da5913966f676c5ebc735f09ea1
 
 (Note that the above `key` file will only exist on service nodes upgraded from loki 7.x or earlier;
-new nodes created under loki/oxen 8.x and above will only have the following `key_ed25519` file,
-while earlier nodes will have both files. To restore a service node you always need `key_ed25519`,
-and need `key` if it exists)
+new nodes created under loki/oxen 8.x and above will only have the following `key_ed25519` and
+`key_bls` files, while earlier nodes will have all three. To restore a service node you always need
+`key_ed25519` and `key_bls, and need `key` if it exists).
 
     hades:~$ sudo oxen-sn-keys show /var/lib/oxen/node-01/key_ed25519 
-    "/var/lib/oxen/node-01/key_ed25519" (Ed25519 SN keypair)
+    /var/lib/oxen/node-01/key_ed25519 (Ed25519 SN keypair)
     ==========
     Secret key:      dacf1adeed1d7d2821f77ac13015493f4459c8c4d83334e9456a5b04993599da
     Public key:      16be3acc80150c8f0fa97ffa3bdbfb2a3927f570a553ecb2acf018b20891956b
     X25519 pubkey:   bcf303f32526687a82bd4279d2e1f638f6b5347e84a8cb9f46bc187ebfc44c29
     Lokinet address: n49diurynwge6d7jx97dzs95feh1x7mowij63cic6ycmrnrt1iio.snode
 
-(I know, I know, the "Hades" hostname above is from the wrong pantheon, but I named this machine
-long before Loki was born).
+    hades:~$ sudo oxen-sn-keys show /var/lib/oxen/node-01/key_bls
+    /var/lib/oxen/node-01/key_bls (BLS SN keypair)
+    ==========
+    Secret key:      0x20cde78c2608259d88a4142287c392ea0bbd8ceea8f837eccaaec1aa1c8f38f9
+    Public key:      0x1abc39c9dc4de40f92c3cb2b3e74e889c139883b1bb627408e948d742a2a5d021c406bbbe7961bad22636a40aefbb1ed1ae4a7e2b74170b7d7ab2548b0274eee
 
-Copy and paste that content of the file(s) and back them up somewhere.  If you ever need to restore
-it you would use one or both of:
+Copy and paste those outputs and back them up somewhere.  If you ever need to restore them you would
+use:
 
     sudo oxen-sn-keys restore /var/lib/oxen/node-99/key_ed25519
+    sudo oxen-sn-keys restore-bls /var/lib/oxen/node-99/key_bls
+
+And also, if you had the older legacy SN keypair `key` file:
+
     sudo oxen-sn-keys restore-legacy /var/lib/oxen/node-99/key
 
-which will prompt you for the keys displayed by the `show` commands.
+These commands will prompt you for the key info displayed by the `show` commands.
 
-### Faster syncing
+## Faster syncing
 
 Once you have one service node synced, you can start up another one much faster by stopping it and
 copying its lmdb file to the new one.  Let's say I have service node 42 all synced and up and
@@ -276,3 +288,48 @@ running, and I want to create server node 77.
 5. Check on your oxend's with `oxend-42 status` and `oxend-77` status.  (This assumes you installed
    the bit of code in `~/.bashrc` that I mentioned earlier.  Also you will have to log out and in
    again before the `oxend-77` alias will work).
+
+## Using oxend as an L2 proxy
+
+When running multiple service nodes -- whether or not on the same machine -- it is useful to be able
+to designate just one or two as the nodes that talk to the actual L2 provider, and have the others
+talk to that L2-provider-connected oxend in "L2 proxy" mode where that node can provide L2
+information to the other nodes.
+
+See the description of [the L2 proxy pull request](https://github.com/oxen-io/oxen-core/pull/1805)
+for more details on how this works.
+
+The scripts in this repository can configure an oxen "NN" node to use an L2 proxy (instead of a
+provider), but do not automatically set it up.  A quick version of a setup that would use the "00"
+node on a server as the l2-provider, with the "01" through "07" nodes using the "00" node as the l2
+proxy, is as follows:
+
+0. Obtain access to an Arbitrum One L2 RPC provider.  Ideally obtain access to two different
+   providers, so that you can fall back to another provider in case of connectivity issues to the
+   first provider.  I will use "https://example.org/arb" and "https://backup.example.com/arb" as my
+   primary and backup providers in this example.
+1. Set up the "00" oxen-node using `oxen-multi-sn-create 00 https://example.org/arb https://backup.example.com/arb`.
+2. Reconfigure 00 to act as a proxy by editing `/etc/oxen/node-00.conf` and adding the line:
+
+       l2-proxy=/etc/oxen/proxy-pubkeys.txt
+
+3. Create the above file using `touch /etc/oxen/proxy-pubkeys.txt` (we don't need to put anything
+   in it yet).
+4. Restart node 00: `systemctl restart oxen-node@00`.
+5. Set up the "01" oxen-node using `oxen-multi-sn-create 01 ipc:///var/lib/oxen/node-00/oxend.sock`
+6. Repeat step 4 for 02 through 07.  (Note that the "node-00" part doesn't change).
+
+This will result in a setup where the oxen-node@00 is responsible for providing L2 information to
+all the other nodes on the machine.
+
+If you want to extend this access to service nodes running on remote hosts then you can also do:
+
+7. For each remote oxend that you want to be able to connect, add its pubkey into the
+   /etc/oxen/proxy-pubkeys.txt file.  (You do *not* have to restart the oxen-node@00 oxend after
+   changing this file; it will detect changes and reload it).
+8. Make a note of the oxen-node@00's public IP, its quorumnet port (225NN, e.g. 22500 for
+   oxen-node@00), and its pubkey.  (If you are following these instructions from a very old pre-Oxen
+   8 node with separate primary and Ed25519 pubkeys, you must use the Ed25519 pubkey!)
+9. When configuring the remote, for a non-multi-sn setup, specify "l2-oxend=IP:PORT/PUBKEY".  For a
+   multi-sn setup, run `oxen-multi-sn-create NN l2-oxend IP:PORT/PUBKEY` for a new node, or
+   `oxen-multi-sn-upgrade l2-oxend IP:PORT/PUBKEY` when first upgrading a node to the 11.2+ release.

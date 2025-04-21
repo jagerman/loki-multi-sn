@@ -1,7 +1,7 @@
 Source: oxen-multi-sn
 Section: metapackages
 Priority: optional
-Maintainer: Jason Rhinelander <jason@imaginary.ca>
+Maintainer: Jason Rhinelander <jason@session.foundation>
 Build-Depends: debhelper (>= 11~)
 Standards-Version: 4.1.4
 Homepage: https://github.com/jagerman/loki-multi-sn
@@ -9,24 +9,13 @@ Homepage: https://github.com/jagerman/loki-multi-sn
 Package: oxen-multi-sn
 Architecture: all
 Multi-Arch: foreign
-Depends: curl, oxend (>= 10.4.1-1~), lokinet-bin (>= 0.9.11-2~), oxen-storage-server (>= 2.6.2-2~), debconf
-Replaces: loki-multi-sn (<< 0.16~)
-Breaks: loki-multi-sn (<< 0.16~)
+Depends: curl, oxend (>= 11.2.0-1~), lokinet-bin (>= 0.9.13-2~), oxen-storage-server (>= 2.10.0-1~), debconf
 Description: Oxen service node multi-SN helper package
  This package contains service templates, targets, and a helper script to set
  up multiple SNs on the same machine.
  .
- This is unsupported and requires significantly a significantly more powerful
- machine than what is required to run a single service node.
+ This is unsupported and requires a significantly more powerful machine than
+ what is required to run a single service node.
  .
  For more details on how to use this, see
  https://github.com/jagerman/loki-multi-sn
-
-Package: loki-multi-sn
-Architecture: all
-Section: oldlibs
-Depends: oxen-multi-sn, lokid (>= 8.1.5-1~), loki-storage-server (>= 2.0.8-1~)
-Description: transitional package
- Contains multi-sn aliases for oxen -> loki rename.
- .
- This is a transition package. It can be safely removed.

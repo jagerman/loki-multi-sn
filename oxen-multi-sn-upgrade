@@ -2,8 +2,49 @@
 
 set -e
 
-if [ "$#" -ne 0 ]; then
-    echo "Usage: oxen-multi-sn-upgrade"
+print_help() {
+    cat <<HELP
+Usage: oxen-multi-sn-upgrade 'https://l2.provider/url' [backups...]
+Usage: oxen-multi-sn-upgrade l2-oxend IP:PORT/PUBKEY [backups...]
+
+Specify one or more l2-providers to add to oxend configs.
+
+To set up all multi-nodes on this machine to communicate directly with an
+Arbitrum One RPC provider, simply run this command with the primary RPC URL
+optionally followed by any backup providers you want to configure that will be
+used if the backup is inaccessible or starts significantly lagging.  For
+example:
+
+    oxen-multi-sn-upgrade 'https://example.com/arb1rpc' 'https://backup.example.com/arb1'
+
+You can also configure oxend in L2 proxy mode to significantly reduce the L2
+provider RPC usage.  This script can configure nodes to use a preconfigured
+oxend proxy, but does not automatically configure the proxy oxend node itself.
+For more details on setting up a proxy, see online Session node documentation.
+
+The listed providers will be tested to make sure they are reachable and are
+providing services for the correct Arbitrum One network; to skip this check add
+the word "nocheck" before the URLs:
+
+    oxen-multi-sn-upgrade nocheck 'http://example.com/xyzrpc' 'https://backup.example.org'
+
+To configure the nodes on this server to use such a proxy run this command with
+one or more address/pubkeys that have been configured to allow this node to use
+the proxy, such as the following (ignore the \\, the command should be entered
+as one single command):
+
+    oxen-multi-sn-upgrade l2-oxend \\
+        10.11.12.13:5678/1ed91b8657b897dcca052343d19df402bf58a90134132266b1634e0bacdf89d2 \\
+        10.20.30.40:9876/d511bcbbf01f739187df45a59501aafaa02cedda678d05cb9aee27f9b91f0caf
+
+(Note that if the proxy is a very old node (installed before Oxen v8), it may
+have different primary pubkey and Ed25519 pubkeys: in such a case you must use
+Ed25519 pubkey rather than the primary SN pubkey here).
+HELP
+}
+
+if [ "$#" -eq 0 ] || [[ "$1" =~ ^- ]]; then
+    print_help
     exit 1
 fi
 
@@ -12,51 +53,75 @@ if [ "$UID" -ne 0 ]; then
     exit 1
 fi
 
+
+l2_setting=
+bad=
+
+if [ "$1" = "l2-oxend" ]; then
+    shift
+
+    for proxy in "$@"; do
+        if [[ "$proxy" =~ ^([1-9][0-9]*\.){3}[1-9][0-9]*:[1-9][0-9]{0,4}/[a-fA-F0-9]{64}$ ]] || [[ "$proxy" =~ ^ipc://. ]]; then
+            l2_setting="$l2_setting\nl2-oxend=$proxy"
+        else
+            bad=1
+            echo "Invalid l2-oxend proxy address: '$proxy'; expected IP:PORT/PUBKEY"
+        fi
+    done
+else
+    if [ "$1" = "nocheck" ]; then
+        shift
+    else
+        for url in "$@"; do
+            outi=$(mktemp)
+            erri=$(mktemp)
+            echo -en "\nChecking '$url'..."
+            if curl -sSX POST "$url" --connect-timeout 10 -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}' -o "$outi" 2>"$erri"; then
+                if grep '"0xa4b1"' "$outi" >/dev/null; then
+                    echo -e " Success!"
+                else
+                    bad=1
+                    echo -e " Did not find expected Arbitrum One network id \"0xa4b1\" in the L2 provider 'eth_chainId' response:\n-----"
+                    cat "$outi"
+                    echo -e "-----\nThis RPC provider may be on the wrong network\n"
+                fi
+            else
+                bad=1
+                echo -e " Request failed:\n-----"
+                cat "$erri"
+                echo -e "-----\n"
+            fi
+        done
+    fi
+
+    for proxy in "$@"; do
+        l2_setting="$l2_setting\nl2-provider=$proxy"
+    done
+fi
+
+if [ "$#" -eq 0 ]; then
+    echo "No L2 providers given, unable to proceed!"
+    bad=1
+fi
+
+if [ -n "$bad" ]; then
+    echo -e "\n\n\e[31;1mCorrect the errors above and then re-run this script\e[0m\n"
+    exit 1
+fi
+
 oxend_upgrade=()
-ss_upgrade=()
-lokinet_upgrade=()
-ss210_upgrade=()
 
 shopt -s nullglob
 
-echo "Finding lokid->oxend configs that need migration:"
-for x in /etc/loki/node-[0-9][0-9].conf; do
-    ox="${x/loki/oxen}"
-    if [ -e "$ox" ]; then
-        echo "Error: $ox already exists, aborting migration to avoid potentially overwriting things" >&2
-        exit 1
-    fi
-    oxend_upgrade+=("$x")
-    echo "    - $x"
-done
-
-echo "Finding storage server configs that need migration:"
-for x in /etc/loki/storage-[0-9][0-9].conf; do
-    ox="${x/loki/oxen}"
-    if [ -e "$ox" ]; then
-        echo "Error: $ox already exists, aborting migration to avoid potentially overwriting things" >&2
-        exit 1
-    fi
-    ss_upgrade+=("$x")
-    echo "    - $x"
-done
-
-for x in /etc/oxen/storage-[0-9][0-9].conf; do
-    if ! grep -q oxend-rpc= $x; then
-        ss210_upgrade+=("$x")
+echo "Finding oxend configs that need L2 configuration:"
+for x in /etc/oxen/node-[0-9][0-9].conf; do
+    if ! grep -q '^\(l2-oxend\|l2-provider\)' $x; then
+        oxend_upgrade+=("$x")
         echo "    - $x"
     fi
 done
 
-echo "Finding lokinet configs that need upgrading:"
-for x in /etc/loki/lokinet-router-[0-9][0-9].ini; do
-    if grep -q ^jsonrpc $x; then
-        lokinet_upgrade+=("$x")
-        echo "    - $x"
-    fi
-done
-
-if [ "${#oxend_upgrade[@]}${#ss_upgrade[@]}${#lokinet_upgrade[@]}${#ss210_upgrade[@]}" == "0000" ]; then
+if [ "${#oxend_upgrade[@]}" = "0" ]; then
     echo "Nothing to upgrade"
     exit 0
 fi
@@ -65,90 +130,18 @@ restarts=()
 
 if [ "${#oxend_upgrade[@]}" -gt 0 ]; then
     echo -e "\n"
-    read -p "Press enter to move /etc/loki/node-*.conf files to /etc/oxen and switch the active services to oxen-node@XX.service, Ctrl-C to abort."
-    echo
-
-    stops=()
-    starts=()
-    for ox in "${oxend_upgrade[@]}"; do
-        NN=${ox/*node-/}
-        NN=${NN/.conf/}
-        mv -v "${ox}" "${ox/loki/oxen}"
-        if systemctl -q is-enabled loki-node@$NN; then
-            stops+=("loki-node@$NN")
-            starts+=("oxen-node@$NN")
-        fi
-    done
-    if [ "${#stops[@]}" -gt 0 ]; then
-        echo "Switching active services from loki-node@XX to oxen-node@XX"
-        systemctl disable "${stops[@]}"
-        systemctl enable "${starts[@]}"
-        echo "Stopping ${stops[*]}"
-        systemctl stop "${stops[@]}"
-        echo "Starting ${starts[*]}"
-        systemctl start "${starts[@]}"
-    fi
-fi
-
-if [ "${#ss_upgrade[@]}" -gt 0 ]; then
-    echo -e "\n"
-    read -p "Press enter to move /etc/loki/storage-*.conf files to /etc/oxen and switch the active services to oxen-storage-server@XX.service, Ctrl-C to abort."
-    echo
-
-    stops=()
-    starts=()
-    for ox in "${ss_upgrade[@]}"; do
-        NN=${ox/*storage-/}
-        NN=${NN/.conf/}
-        mv -v "${ox}" "${ox/loki/oxen}"
-        if systemctl -q is-enabled loki-storage-server@$NN; then
-            stops+=("loki-storage-server@$NN")
-            starts+=("oxen-storage-server@$NN")
-        fi
-    done
-    if [ "${#stops[@]}" -gt 0 ]; then
-        echo "Switching active services from loki-storage-server@XX to oxen-storage-server@XX"
-        systemctl disable "${stops[@]}"
-        systemctl enable "${starts[@]}"
-        echo "Stopping ${stops[*]}"
-        systemctl stop "${stops[@]}"
-        echo "Starting ${starts[*]}"
-        systemctl start "${starts[@]}"
-    fi
-
-    echo -e "\e[33;1mNOTE: you need to run this script once more to fully migrate storage server!\e[1m"
-fi
-
-if [ "${#lokinet_upgrade[@]}" -gt 0 ]; then
-    echo -e "\n"
-    read -p "Press enter to change the old jsonrpc= option to rpc=... in the above lokinet configs, Ctrl-C to abort."
-
-    for ln in "${lokinet_upgrade[@]}"; do
-        num=${ln/*-/}
-        num=${num/.ini/}
-        perl -pi -e "s{^jsonrpc=.*}{rpc=ipc:///var/lib/oxen/node-$num/oxend.sock}" $ln
-        echo "Updated RPC setting in $ln"
-    done
-
-    restarts+=("lokinet-routers.target")
-fi
-
-if [ "${#ss210_upgrade[@]}" -gt 0 ]; then
-    echo -e "\n"
-    echo -e "About to change the old lokid-rpc-port=PORT option to oxend-rpc=ipc:///var/lib/oxen/node-XX/oxend.sock"
+    echo "About to add the following L2 configuration to the oxend configs listed above:"
+    echo -e "$l2_setting" | sed -e 's/^/    /'
+    echo ""
     read -p "Press enter to continue, Ctrl-C to abort."
 
-    for ss in "${ss210_upgrade[@]}"; do
-        num=${ss/*storage-/}
-        num=${num/.conf/}
-        perl -pi -e "s{lokid-rpc-port=.*}{oxend-rpc=ipc:///var/lib/oxen/node-$num/oxend.sock}" $ss
-        echo "Updated RPC setting in $ss"
+    for ox in "${oxend_upgrade[@]}"; do
+        echo -e "$l2_setting" >>"$ox"
     done
-
-    restarts+=("oxen-storage-servers.target")
+    restarts+=(oxen-nodes.target)
 fi
 
 echo -e "\nAll done."
 if [ "${#restarts[*]}" -gt 0 ]; then
-    echo -e "You probably want to run this now:\n\nsystemctl restart ${restarts[*]}\n"
+    echo -e "\nYou probably want to run this now to restart services with the update configs:\n\n    systemctl restart ${restarts[*]}\n"
 fi

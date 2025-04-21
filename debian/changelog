@@ -1,3 +1,11 @@
+oxen-multi-sn (0.26) sid; urgency=medium
+
+  * Updated dependencies for 11.2.0.
+  * oxen-multi-sn-upgrade script rewritten to deal with adding l2-provider
+    or l2-oxend configs.
+
+ -- Jason Rhinelander <jason@session.foundation>  Mon, 21 Apr 2025 13:53:02 -0300
+
 oxen-multi-sn (0.25) sid; urgency=medium
 
   * Updated required versions for 10.4.x mandatory update
