@@ -296,7 +296,8 @@ to designate just one or two as the nodes that talk to the actual L2 provider, a
 talk to that L2-provider-connected oxend in "L2 proxy" mode where that node can provide L2
 information to the other nodes.
 
-See the description of [the L2 proxy pull request](https://github.com/oxen-io/oxen-core/pull/1805)
+See the [oxend L2 proxy docs
+page](https://docs.getsession.org/user-guides/session-stagenet-node-setup/how-to-set-up-an-oxend-l2-proxy)
 for more details on how this works.
 
 The scripts in this repository can configure an oxen "NN" node to use an L2 proxy (instead of a
