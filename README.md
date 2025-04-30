@@ -302,9 +302,9 @@ for more details on how this works.
 
 The scripts in this package can update or create oxen "NN" nodes that use an L2 proxy (instead of a
 full L2 provider), but the proxy itself must still be configured manually.  See the docs page linked
-above for the overall details.  A quick recipe for setting up the "00" node on a server as the
-l2-provider, with the "01" through "07" nodes on the same machine using the "00" node as the l2
-proxy, is as follows:
+above for the overall details.  For upgrading, see the section below.  For setting up a new server,
+a quick recipe for setting up the "00" node on a server as the l2-provider, with the "01" through
+"07" nodes on the same machine using the "00" node as the l2 proxy, is as follows:
 
 0. Obtain access to an Arbitrum One L2 RPC provider.  Ideally obtain access to two different
    providers, so that you can fall back to another provider in case of connectivity issues to the
@@ -321,7 +321,7 @@ proxy, is as follows:
 3. Create the above file using `touch /etc/oxen/proxy-pubkeys.txt` (we don't need to put anything
    in it yet).
 4. Restart node 00: `systemctl restart oxen-node@00`.
-5. Set up the "01" oxen-node using `oxen-multi-sn-create 01 ipc:///var/lib/oxen/node-00/oxend.sock`
+5. Set up the "01" oxen-node using `oxen-multi-sn-create 01 l2-oxend ipc:///var/lib/oxen/node-00/oxend.sock`
 6. Repeat step 4 for 02 through 07.  (Note that "01" changes, but the "node-00" part doesn't).
 
 This will result in a setup where the oxen-node@00 is responsible for providing L2 information to
@@ -341,3 +341,25 @@ this up as follows:
    multi-sn setup, run `oxen-multi-sn-create NN l2-oxend IP:PORT/PUBKEY` for a new node, or
    `oxen-multi-sn-upgrade l2-oxend IP:PORT/PUBKEY` when first upgrading a multi-sn server to the
    11.2+ release.
+
+### Upgrading an existing oxen-multi-sn setup
+
+If you already have a oxen-multi-sn setup (e.g. upgrading from oxen 10), you will want to follow
+steps 0-4 above to get one of your existing nodes working as a proxy with an configured l2-provider.
+I'll continue to assume that it is node 00, but it could be any of them.  The rest of the nodes can
+then be upgraded using:
+
+    oxen-multi-sn-upgrade l2-oxend ipc:///var/lib/oxen/node-00/oxend.sock
+
+(be sure to change 00 to whichever node you are using).  This will add the l2-oxend= config line to
+all the other files at once.
+
+You can also set up multiple nodes at once.  For instance if you wanted to use my 00 node *and* a
+remote node for redundancy, then you would follow steps 7-8 above, and then specify both the ipc for
+node-00, and the remote address for the other proxy, like this:
+
+    oxen-multi-sn-upgrade l2-oxend ipc:///var/lib/oxen/node-00/oxend.sock IP:PORT/PUBKEY
+
+This command only does something to node-NN configs that do not have any L2 configuration at all: if
+you want to edit it later then you need to edit the /etc/oxen/node-NN.conf files to add the relevant
+l2-oxend= lines.
