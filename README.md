@@ -268,7 +268,7 @@ These commands will prompt you for the key info displayed by the `show` commands
 ## Faster syncing
 
 Once you have one service node synced, you can start up another one much faster by stopping it and
-copying its lmdb file to the new one.  Let's say I have service node 42 all synced and up and
+copying its database files to the new one.  Let's say I have service node 42 all synced and up and
 running, and I want to create server node 77.
 
 1. Set up service node 77 and let it run for 15 seconds, which should be long enough for it to
@@ -276,18 +276,20 @@ running, and I want to create server node 77.
 
 2. Stop both service node 42 and 77: `sudo systemctl stop oxen-node@42 oxen-node@77`
 
-3. Copy 42's lmdb to 77's lmdb with:
+3. Copy 42's three database files to 77's with:
 
-       sudo cp -p /var/lib/oxen/node-42/lmdb/data.mdb /var/lib/oxen/node-77/lmdb/data.mdb
+       sudo cp -p /var/lib/oxen/node-42/lmdb/data.mdb /var/lib/oxen/node-77/lmdb/
+       sudo cp -p /var/lib/oxen/node-42/*.db /var/lib/oxen/node-77/
 
-   Double check that you have this in the correct order!  The first file path should be the fully synced
-   node, the second is the new one to overwrite.
+   Double check that you have this in the correct order!  The first file path in each command (where
+   I have node-42) should be the fully synced node, the second (with node-77) is the new one to
+   overwrite.
 
 4. Start both oxend's again with: `sudo systemctl start oxen-node@42 oxen-node@77`
 
 5. Check on your oxend's with `oxend-42 status` and `oxend-77` status.  (This assumes you installed
    the bit of code in `~/.bashrc` that I mentioned earlier.  Also you will have to log out and in
-   again before the `oxend-77` alias will work).
+   again, or run `. ~/.bashrc`, before the `oxend-77` alias will work).
 
 ## Using oxend as an L2 proxy
 
